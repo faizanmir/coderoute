@@ -21,8 +21,6 @@ COPY pr-analyzer-service/pom.xml ./pr-analyzer-service/
 COPY ai-reviewer-service/pom.xml ./ai-reviewer-service/
 COPY comment-publisher-service/pom.xml ./comment-publisher-service/
 
-# Download all project dependencies
-RUN mvn dependency:go-offline
 
 # --- Source Code Compilation ---
 # Now, copy the source code and build the project.
