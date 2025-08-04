@@ -1,35 +1,37 @@
 package com.ai.coderoute.aireviewservice.service
 
-import com.ai.coderoute.aireviewservice.utils.PromptUtil.reviewSystemPromptTemplate
-import com.ai.coderoute.aireviewservice.utils.ReviewParser
+import com.ai.coderoute.aireviewservice.component.JsonParser
+import com.ai.coderoute.aireviewservice.utils.PromptUtil
 import com.ai.coderoute.models.ReviewFinding
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.messages.UserMessage
-import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 
-class LlmReviewService @Autowired constructor(private val chatClient: ChatClient) {
+
+@Service
+class LlmReviewService @Autowired constructor(private val chatClient: ChatClient, private val jsonParser: JsonParser) {
 
     private val logger = LoggerFactory.getLogger(LlmReviewService::class.java)
 
-    fun reviewCode(filename : String, fileContent : String) : List<ReviewFinding> {
+    fun reviewCode(filename: String, fileContent: String): List<ReviewFinding?> {
         val codeBlock = """
-        # Input Code
-        
-        FILE_PATH: $filename
-        ```kotlin
-        $fileContent
-        ```
-        """.trimIndent()
+            FILE_PATH: $filename
+            NOTE:
+            - Each line of code includes its **line number prefix** (e.g., `12 | val foo = "bar"`).
+            - Use these line numbers in your analysis output.
+            $fileContent
+            """.trimIndent()
 
         val userMessage = UserMessage(codeBlock)
-        val systemMessage = reviewSystemPromptTemplate.createMessage()
+        val systemMessage = PromptUtil.reviewSystemMessage
+        val response = chatClient
+            .prompt()
+            .messages(listOf(systemMessage, userMessage))
+            .call()
 
-        val prompt = Prompt(listOf(systemMessage, userMessage))
-
-        logger.info("Sending prompt to AI for file: $filename")
-        val response = chatClient.prompt(prompt).call().content()
-        return ReviewParser.parse(response ?: "")
+        logger.info("Sending prompt to AI for file: ${response.content()}")
+        return jsonParser.parseFindingList(response.content())
     }
 }

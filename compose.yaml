@@ -1,31 +1,67 @@
-# This Docker Compose file defines and runs the multi-container application environment.
-# It includes the CodeRoute application, Ollama, ngrok, Kafka, and MongoDB.
 version: '3.8'
 
 services:
-  # 1. The CodeRoute Application Service
-  coderoute:
-    build: .
-    container_name: coderoute-app
+  # 1. Application Microservices
+  webhook-handler:
+    build:
+      context: .
+      dockerfile: Dockerfile # Use the single, root Dockerfile
+      args:
+        SERVICE_NAME: webhook-handler-service
+        SERVICE_PORT: 8080
+    container_name: webhook-handler-app
     ports:
-      # This port mapping is for local debugging.
       - "8080:8080"
     depends_on:
-      # Ensures that dependencies are started before the coderoute application
-      - ollama
       - kafka
-      - mongo # Added dependency on MongoDB
     environment:
-      # This tells our Spring AI application where to find the Ollama service.
-      - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
-      # This tells our Spring application where to find the Kafka message broker.
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      # This tells our Spring application how to connect to the MongoDB database.
-      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/coderoute
-      # Pass the GitHub token from your host machine's environment into the container
       - GITHUB_API_TOKEN=${GITHUB_API_TOKEN}
 
-  # 2. The Ollama AI Service
+  pr-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile # Use the single, root Dockerfile
+      args:
+        SERVICE_NAME: pr-analyzer-service
+        SERVICE_PORT: 8081
+    container_name: pr-analyzer-app
+    depends_on:
+      - kafka
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+
+  ai-reviewer:
+    build:
+      context: .
+      dockerfile: Dockerfile # Use the single, root Dockerfile
+      args:
+        SERVICE_NAME: ai-reviewer-service
+        SERVICE_PORT: 8082
+    container_name: ai-reviewer-app
+    depends_on:
+      - kafka
+      - ollama
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
+
+  comment-publisher:
+    build:
+      context: .
+      dockerfile: Dockerfile # Use the single, root Dockerfile
+      args:
+        SERVICE_NAME: comment-publisher-service
+        SERVICE_PORT: 8083
+    container_name: comment-publisher-app
+    depends_on:
+      - kafka
+      - mongo
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/coderoute
+
+  # 2. Backing Infrastructure Services
   ollama:
     image: ollama/ollama
     container_name: ollama-service
@@ -34,21 +70,17 @@ services:
     volumes:
       - ollama_data:/root/.ollama
 
-  # 3. The ngrok Service
   ngrok:
     image: ngrok/ngrok:latest
     container_name: ngrok-tunnel
     ports:
-      # Exposes the ngrok web interface for inspecting traffic
       - "4040:4040"
     depends_on:
-      - coderoute
+      - webhook-handler
     environment:
-      # Your ngrok authtoken. Get this from your ngrok dashboard.
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
-    command: http coderoute:8080
+    command: http webhook-handler:8080
 
-  # 4. Zookeeper (A required dependency for Kafka)
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
     container_name: zookeeper
@@ -56,14 +88,12 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-  # 5. The Kafka Message Broker
   kafka:
     image: confluentinc/cp-kafka:7.0.1
     container_name: kafka
     depends_on:
       - zookeeper
     ports:
-      # Exposes Kafka on localhost:9092 so you can connect with external tools if needed
       - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
@@ -73,18 +103,14 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  # 6. The MongoDB Database Service (NEW)
   mongo:
     image: mongo:latest
     container_name: mongo-db
     ports:
-      # Exposes the MongoDB port to your local machine for direct access
       - "27017:27017"
     volumes:
-      # Creates a persistent volume to store your database data
       - mongo_data:/data/db
 
-# Defines the named volumes used by the services
 volumes:
   ollama_data:
-  mongo_data: # Added volume for MongoDB persistence
+  mongo_data:

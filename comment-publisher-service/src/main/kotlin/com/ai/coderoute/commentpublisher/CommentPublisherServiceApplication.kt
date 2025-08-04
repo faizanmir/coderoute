@@ -7,7 +7,6 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 class CommentPublisherServiceApplication
 
-
 fun main(args : Array<String>) {
     runApplication<CommentPublisherServiceApplication>(*args)
 }

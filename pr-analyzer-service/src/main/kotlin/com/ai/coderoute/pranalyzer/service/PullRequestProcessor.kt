@@ -17,10 +17,9 @@ class PullRequestProcessor(
     private val kafkaTemplate: KafkaTemplate<String, FileReadyForAnalysis>
 ) {
     private val logger = LoggerFactory.getLogger(PullRequestProcessor::class.java)
-    private val topic = "file-analysis-events" // The topic to publish results to.
+    private val topic = "file-analysis-events"
 
     fun process(event: PullRequestReceivedEvent) {
-        // Create a temporary directory for the clone
         val localPath = Files.createTempDirectory("pr-repo-${event.pullNumber}-").toFile()
         var git: Git? = null
 
@@ -42,7 +41,6 @@ class PullRequestProcessor(
                 diffs.forEach { diffEntry ->
                     val processedFile = processDiffEntry(diffEntry, localPath)
 
-                    // Create the outgoing event for Kafka
                     val outgoingEvent = FileReadyForAnalysis(
                         owner = event.owner,
                         repo = event.repo,
@@ -58,9 +56,7 @@ class PullRequestProcessor(
             }
         } catch (e: Exception) {
             logger.error("Failed to process PR #${event.pullNumber} by cloning.", e)
-            // Here you could publish a "failed" event for monitoring purposes.
         } finally {
-            // Clean up - always delete the temporary directory
             logger.info("Cleaning up temporary directory: $localPath")
             git?.close()
             localPath.deleteRecursively()
@@ -85,6 +81,7 @@ class PullRequestProcessor(
                 val numberedContent =
                     rawContent.lines().mapIndexed { index, line -> "${index + 1}: $line" }
                         .joinToString("\n")
+                logger.info("numberedContent {}", numberedContent)
                 ProcessedFile(filename, numberedContent)
             }
         }

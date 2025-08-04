@@ -5,5 +5,5 @@ data class AnalysisCompleted(
     val repo: String,
     val pullNumber: Int,
     val filename: String,
-    val findings: List<ReviewFinding>
+    val findings: List<ReviewFinding?>
 )

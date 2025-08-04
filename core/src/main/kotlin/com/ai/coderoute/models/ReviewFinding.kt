@@ -6,7 +6,7 @@ data class ReviewFinding(
     @JsonProperty("filePath")
     val filePath: String,
     @JsonProperty("lineNumber")
-    val lineNumber: Int?,
+    val lineNumber: Int = 0,
     @JsonProperty("severity")
     val severity: String,
     @JsonProperty("category")
@@ -17,8 +17,4 @@ data class ReviewFinding(
     val message: String,
     @JsonProperty("suggestion")
     val suggestion: String,
-    @JsonProperty("owasp")
-    val owasp: String?,
-    @JsonProperty("cwe")
-    val cwe: String? = null,
 )

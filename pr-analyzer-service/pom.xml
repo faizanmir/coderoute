@@ -102,6 +102,11 @@
 			<artifactId>org.eclipse.jgit</artifactId>
 			<version>6.8.0.202311291450-r</version> <!-- Or the latest version -->
 		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-kotlin</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

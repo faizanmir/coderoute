@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class GitHubPullRequestPayload(
     @JsonProperty("action")
-    val action: String,
+    val action: String?,
     @JsonProperty("repository")
     val repository: Repository,
     @JsonProperty("pull_request")
@@ -49,16 +49,4 @@ data class Base(
 data class Head(
     @JsonProperty("sha")
     val sha: String,
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class ApiChangedFile(
-    @JsonProperty("filename")
-    val filename: String,
-    @JsonProperty("status")
-    val status: String,
-    @JsonProperty("patch")
-    val patch: String?,
-    @JsonProperty("raw_url")
-    val rawUrl: String,
 )
