@@ -5,5 +5,5 @@ data class FileReadyForAnalysis(
     val repo: String,
     val pullNumber: Int,
     val filename: String,
-    val contentWithLineNumbers: String
+    val contentWithLineNumbers: String,
 )

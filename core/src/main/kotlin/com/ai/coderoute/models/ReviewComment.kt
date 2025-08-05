@@ -8,4 +8,3 @@ data class ReviewComment(
     val line: Int,
     val body: String,
 )
-

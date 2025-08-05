@@ -8,19 +8,21 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 
 @Component
-class PullRequestListener @Autowired constructor(val pullRequestProcessor: PullRequestProcessor) {
+class PullRequestListener
+    @Autowired
+    constructor(val pullRequestProcessor: PullRequestProcessor) {
+        private val logger = LoggerFactory.getLogger(PullRequestListener::class.java)
 
-    private val logger = LoggerFactory.getLogger(PullRequestListener::class.java)
-
-    @KafkaListener(
-        topics = ["pr-events"], groupId = "pr-analyzer-group"
-    )
-    fun consumePullRequestEvent(event: PullRequestReceivedEvent) {
-        logger.info("PR-ANALYZER: Consumed event for PR #${event.pullNumber} in ${event.owner}/${event.repo}")
-        try {
-            pullRequestProcessor.process(event)
-        } catch (e: Exception) {
-            logger.error("PR-ANALYZER: Unhandled exception during processing of PR #${event.pullNumber}", e)
+        @KafkaListener(
+            topics = ["pr-events"],
+            groupId = "pr-analyzer-group",
+        )
+        fun consumePullRequestEvent(event: PullRequestReceivedEvent) {
+            logger.info("PR-ANALYZER: Consumed event for PR #${event.pullNumber} in ${event.owner}/${event.repo}")
+            try {
+                pullRequestProcessor.process(event)
+            } catch (e: Exception) {
+                logger.error("PR-ANALYZER: Unhandled exception during processing of PR #${event.pullNumber}", e)
+            }
         }
     }
-}

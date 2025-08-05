@@ -10,22 +10,23 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
 @Component
-class AiReviewerListener @Autowired constructor(
-    val llmReviewService: LlmReviewService,
-    val kafkaTemplate: KafkaTemplate<String, AnalysisCompleted>
-) {
+class AiReviewerListener
+    @Autowired
+    constructor(
+        val llmReviewService: LlmReviewService,
+        val kafkaTemplate: KafkaTemplate<String, AnalysisCompleted>,
+    ) {
+        private val logger = LoggerFactory.getLogger(AiReviewerListener::class.java)
+        private val resultsTopic = "review-results-events"
 
-    private val logger = LoggerFactory.getLogger(AiReviewerListener::class.java)
-    private val resultsTopic = "review-results-events"
-
-    @KafkaListener(
-        topics = ["file-analysis-events"],
-        groupId = "ai-review-service-group"
-    )
-    fun consumeFileReadyForAnalysisEvent(event: FileReadyForAnalysis) {
-        logger.info("Received event for {} analysis ", event.filename)
-        val res = llmReviewService.reviewCode(event.filename, event.contentWithLineNumbers)
-        val resultEvent = AnalysisCompleted(event.owner, event.repo, event.pullNumber, event.filename, res)
-        kafkaTemplate.send(resultsTopic, resultEvent)
+        @KafkaListener(
+            topics = ["file-analysis-events"],
+            groupId = "ai-review-service-group",
+        )
+        fun consumeFileReadyForAnalysisEvent(event: FileReadyForAnalysis) {
+            logger.info("Received event for {} analysis ", event.filename)
+            val res = llmReviewService.reviewCode(event.filename, event.contentWithLineNumbers)
+            val resultEvent = AnalysisCompleted(event.owner, event.repo, event.pullNumber, event.filename, res)
+            kafkaTemplate.send(resultsTopic, resultEvent)
+        }
     }
-}

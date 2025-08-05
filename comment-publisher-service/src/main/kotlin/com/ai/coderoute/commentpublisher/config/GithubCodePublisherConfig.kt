@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 class GithubCodePublisherConfig {
-
     @Value("\${github.token}")
     private lateinit var githubToken: String
 
@@ -24,9 +23,11 @@ class GithubCodePublisherConfig {
             .defaultHeader("Authorization", "Bearer $githubToken").build()
     }
 
-
     @Bean
-    fun coroutineScope() = CoroutineScope(SupervisorJob()
-            + CoroutineExceptionHandler { _,t -> println("Exception encountered in coroutine scope ${t.message}", ) }
-            + Dispatchers.IO)
+    fun coroutineScope() =
+        CoroutineScope(
+            SupervisorJob() +
+                CoroutineExceptionHandler { _, t -> println("Exception encountered in coroutine scope ${t.message}") } +
+                Dispatchers.IO,
+        )
 }

@@ -10,31 +10,33 @@ import org.springframework.web.reactive.function.client.awaitBodilessEntity
 
 @Service
 class GithubCommentPublisher
-@Autowired constructor(
-    @Qualifier("GithubWebClient") private val webClient: WebClient,
-) {
-    suspend fun postReview(
-        owner: String,
-        repo: String,
-        pullNumber: Int,
-        comments: List<ReviewComment?>,
+    @Autowired
+    constructor(
+        @Qualifier("GithubWebClient") private val webClient: WebClient,
     ) {
-        if (comments.isEmpty()) {
-            println("No comments to post for PR #$pullNumber.")
-            return
-        }
+        suspend fun postReview(
+            owner: String,
+            repo: String,
+            pullNumber: Int,
+            comments: List<ReviewComment?>,
+        ) {
+            if (comments.isEmpty()) {
+                println("No comments to post for PR #$pullNumber.")
+                return
+            }
 
-        val reviewRequest = CreateReviewRequest(
-            body = "Automated AI code review complete.",
-            comments = comments,
-        )
+            val reviewRequest =
+                CreateReviewRequest(
+                    body = "Automated AI code review complete.",
+                    comments = comments,
+                )
 
-        try {
-            webClient.post().uri("/repos/{owner}/{repo}/pulls/{pullNumber}/reviews", owner, repo, pullNumber)
-                .bodyValue(reviewRequest).retrieve().awaitBodilessEntity()
-            println("Successfully posted ${comments.size} comments to PR #$pullNumber.")
-        } catch (e: Exception) {
-            println("Failed to post review to PR #$pullNumber: ${e.message}")
+            try {
+                webClient.post().uri("/repos/{owner}/{repo}/pulls/{pullNumber}/reviews", owner, repo, pullNumber)
+                    .bodyValue(reviewRequest).retrieve().awaitBodilessEntity()
+                println("Successfully posted ${comments.size} comments to PR #$pullNumber.")
+            } catch (e: Exception) {
+                println("Failed to post review to PR #$pullNumber: ${e.message}")
+            }
         }
     }
-}

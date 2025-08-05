@@ -4,17 +4,17 @@ import com.ai.coderoute.models.FileReadyForAnalysis
 import com.ai.coderoute.models.PullRequestReceivedEvent
 import com.ai.coderoute.pranalyzer.models.ProcessedFile
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.diff.DiffEntry
+import org.eclipse.jgit.treewalk.CanonicalTreeParser
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
-import java.nio.file.Files
-import org.eclipse.jgit.diff.DiffEntry
-import org.eclipse.jgit.treewalk.CanonicalTreeParser
 import java.io.File
+import java.nio.file.Files
 
 @Service
 class PullRequestProcessor(
-    private val kafkaTemplate: KafkaTemplate<String, FileReadyForAnalysis>
+    private val kafkaTemplate: KafkaTemplate<String, FileReadyForAnalysis>,
 ) {
     private val logger = LoggerFactory.getLogger(PullRequestProcessor::class.java)
     private val topic = "file-analysis-events"
@@ -41,13 +41,14 @@ class PullRequestProcessor(
                 diffs.forEach { diffEntry ->
                     val processedFile = processDiffEntry(diffEntry, localPath)
 
-                    val outgoingEvent = FileReadyForAnalysis(
-                        owner = event.owner,
-                        repo = event.repo,
-                        pullNumber = event.pullNumber,
-                        filename = processedFile.filename,
-                        contentWithLineNumbers = processedFile.content
-                    )
+                    val outgoingEvent =
+                        FileReadyForAnalysis(
+                            owner = event.owner,
+                            repo = event.repo,
+                            pullNumber = event.pullNumber,
+                            filename = processedFile.filename,
+                            contentWithLineNumbers = processedFile.content,
+                        )
 
                     // Publish the event to the next topic in the chain
                     kafkaTemplate.send(topic, outgoingEvent)
@@ -63,11 +64,15 @@ class PullRequestProcessor(
         }
     }
 
-    private fun processDiffEntry(diffEntry: DiffEntry, localPath: File): ProcessedFile {
-        val filename = when (diffEntry.changeType) {
-            DiffEntry.ChangeType.DELETE -> diffEntry.oldPath
-            else -> diffEntry.newPath
-        }
+    private fun processDiffEntry(
+        diffEntry: DiffEntry,
+        localPath: File,
+    ): ProcessedFile {
+        val filename =
+            when (diffEntry.changeType) {
+                DiffEntry.ChangeType.DELETE -> diffEntry.oldPath
+                else -> diffEntry.newPath
+            }
 
         return if (diffEntry.changeType == DiffEntry.ChangeType.DELETE) {
             ProcessedFile(filename, "File was removed in this pull request.")

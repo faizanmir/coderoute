@@ -6,5 +6,5 @@ data class PullRequestReceivedEvent(
     val pullNumber: Int,
     val cloneUrl: String,
     val baseSha: String,
-    val headSha: String
+    val headSha: String,
 )

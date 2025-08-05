@@ -6,6 +6,6 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 class WebHookHandlerApplication
 
-fun main(args : Array<String>) {
+fun main(args: Array<String>) {
     runApplication<WebHookHandlerApplication>(*args)
 }

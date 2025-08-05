@@ -7,18 +7,18 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 
 @Service
-class WebhookEventPublisher @Autowired constructor(private val kafkaTemplate: KafkaTemplate<String, PullRequestReceivedEvent>) {
+class WebhookEventPublisher
+    @Autowired
+    constructor(private val kafkaTemplate: KafkaTemplate<String, PullRequestReceivedEvent>) {
+        private val logger = LoggerFactory.getLogger(WebhookEventPublisher::class.java)
+        private val topic = "pr-events"
 
-    private val logger = LoggerFactory.getLogger(WebhookEventPublisher::class.java)
-    private val topic = "pr-events"
-
-    fun publish(event: PullRequestReceivedEvent) {
-        try {
-            logger.info("Publishing event to topic '$topic' for PR #${event.pullNumber} in ${event.owner}/${event.repo}")
-            kafkaTemplate.send(topic, event)
-        } catch (e: Exception) {
-            logger.error("Failed to publish event for PR #${event.pullNumber}", e)
+        fun publish(event: PullRequestReceivedEvent) {
+            try {
+                logger.info("Publishing event to topic '$topic' for PR #${event.pullNumber} in ${event.owner}/${event.repo}")
+                kafkaTemplate.send(topic, event)
+            } catch (e: Exception) {
+                logger.error("Failed to publish event for PR #${event.pullNumber}", e)
+            }
         }
     }
-
-}

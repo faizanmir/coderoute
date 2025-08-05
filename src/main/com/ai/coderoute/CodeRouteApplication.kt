@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class CodeRouteApplication
 
 fun main(args: Array<String>) {
-	runApplication<CodeRouteApplication>(*args)
+    runApplication<CodeRouteApplication>(*args)
 }

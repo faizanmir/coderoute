@@ -7,7 +7,6 @@ import org.springframework.kafka.annotation.EnableKafka
 @EnableKafka
 class PRAnalyzerServiceApplication
 
-
-fun main(args : Array<String>) {
+fun main(args: Array<String>) {
     runApplication<PRAnalyzerServiceApplication>(* args)
 }

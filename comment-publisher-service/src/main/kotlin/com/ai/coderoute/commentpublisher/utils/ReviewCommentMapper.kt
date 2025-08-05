@@ -5,7 +5,7 @@ import com.ai.coderoute.models.ReviewFinding
 
 object ReviewCommentMapper {
     fun fromReview(finding: ReviewFinding?): ReviewComment? {
-        if (finding== null) return null
+        if (finding == null) return null
         if (finding.lineNumber <= 0) {
             return null
         }

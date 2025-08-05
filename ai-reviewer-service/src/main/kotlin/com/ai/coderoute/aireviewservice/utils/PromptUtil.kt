@@ -4,8 +4,9 @@ import org.springframework.ai.chat.messages.SystemMessage
 
 object PromptUtil {
     val reviewSystemMessage: SystemMessage
-        get() = SystemMessage(
-            """
+        get() =
+            SystemMessage(
+                """
 # Code Review Mandate
 
 ## 🎯 Persona
@@ -50,6 +51,6 @@ If no issues are found, return:
 	•	Do not include explanations or headers
 	•	Do not wrap in markdown
 	•	Only valid JSON
-""".trimIndent()
-        )
+                """.trimIndent(),
+            )
 }
