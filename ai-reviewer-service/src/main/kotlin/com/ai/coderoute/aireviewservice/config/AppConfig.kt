@@ -5,7 +5,6 @@ import org.springframework.ai.chat.client.ChatClientRequest
 import org.springframework.ai.chat.client.ChatClientResponse
 import org.springframework.ai.chat.client.advisor.api.CallAdvisor
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain
-import org.springframework.ai.ollama.OllamaChatModel
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -14,10 +13,8 @@ class AppConfig {
     @Bean
     fun chatClient(
         builder: ChatClient.Builder,
-        ollamaChatModel: OllamaChatModel,
     ): ChatClient {
-        return builder
-            .build()
+        return builder.build()
     }
 
     @Bean

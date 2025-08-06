@@ -82,10 +82,9 @@ class PullRequestProcessor(
                 logger.warn("File listed in diff does not exist locally: $filename")
                 ProcessedFile(filename, "File does not exist at head commit.")
             } else {
-                val rawContent = localFile.readText(Charsets.UTF_8)
-                val numberedContent =
-                    rawContent.lines().mapIndexed { index, line -> "${index + 1}: $line" }
-                        .joinToString("\n")
+                val numberedContent = localFile.readLines(Charsets.UTF_8)
+                    .mapIndexed { index, line -> "${index + 1}: $line" }
+                    .joinToString("\n")
                 logger.info("numberedContent {}", numberedContent)
                 ProcessedFile(filename, numberedContent)
             }
