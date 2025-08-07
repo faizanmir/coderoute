@@ -22,9 +22,6 @@ class LlmReviewService
             val codeBlock =
                 """
                 FILE_PATH: $filename
-                NOTE:
-                - Each line of code includes its **line number prefix** (e.g., `12 | val foo = "bar"`).
-                - Use these line numbers in your analysis output.
                 $fileContent
                 """.trimIndent()
 
@@ -35,8 +32,8 @@ class LlmReviewService
                     .prompt()
                     .messages(listOf(systemMessage, userMessage))
                     .call()
-
-            logger.info("Sending prompt to AI for file: ${response.content()}")
-            return jsonParser.parseFindingList(response.content())
+            val data = response.content()
+            logger.info("Sending prompt to AI for file: $data")
+            return jsonParser.parseFindingList(data)?.reviews ?: emptyList()
         }
     }

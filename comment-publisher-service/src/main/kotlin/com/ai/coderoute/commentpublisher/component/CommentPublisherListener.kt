@@ -21,7 +21,15 @@ class CommentPublisherListener
             groupId = "comment-publisher-group",
         )
         fun onFileAnalysisComplete(event: AnalysisCompleted) {
+            println("Received analysis complete event $event")
             val findings = event.findings.map { ReviewCommentMapper.fromReview(it) }.toList()
-            coroutineScope.launch { githubCommentPublisher.postReview(event.owner, event.repo, event.pullNumber, findings) }
+            coroutineScope.launch {
+                githubCommentPublisher.postReview(
+                    event.owner,
+                    event.repo,
+                    event.pullNumber,
+                    findings,
+                )
+            }
         }
     }

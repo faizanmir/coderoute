@@ -30,7 +30,7 @@ class GithubCommentPublisher
                     body = "Automated AI code review complete.",
                     comments = comments,
                 )
-
+            println("Review Request $reviewRequest")
             try {
                 webClient.post().uri("/repos/{owner}/{repo}/pulls/{pullNumber}/reviews", owner, repo, pullNumber)
                     .bodyValue(reviewRequest).retrieve().awaitBodilessEntity()
