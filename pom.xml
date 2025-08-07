@@ -134,12 +134,6 @@
 								<version>1.2.1</version>
 							</ktlint>
 						</kotlin>
-						<kotlinGradle>
-							<includes>
-								<include>*.gradle.kts</include>
-							</includes>
-							<ktlint/>
-						</kotlinGradle>
 					</configuration>
 				</plugin>
 			</plugins>

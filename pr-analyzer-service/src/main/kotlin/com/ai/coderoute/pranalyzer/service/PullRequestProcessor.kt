@@ -1,12 +1,12 @@
 package com.ai.coderoute.pranalyzer.service
 
+import com.ai.coderoute.logging.logger
 import com.ai.coderoute.models.FileReadyForAnalysis
 import com.ai.coderoute.models.PullRequestReceivedEvent
 import com.ai.coderoute.pranalyzer.models.ProcessedFile
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.diff.DiffEntry
 import org.eclipse.jgit.treewalk.CanonicalTreeParser
-import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import java.io.File
@@ -16,8 +16,8 @@ import java.nio.file.Files
 class PullRequestProcessor(
     private val kafkaTemplate: KafkaTemplate<String, FileReadyForAnalysis>,
 ) {
-    private val logger = LoggerFactory.getLogger(PullRequestProcessor::class.java)
     private val topic = "file-analysis-events"
+    private val logger = logger<PullRequestProcessor>()
 
     fun process(event: PullRequestReceivedEvent) {
         val localPath = Files.createTempDirectory("pr-repo-${event.pullNumber}-").toFile()
@@ -26,7 +26,8 @@ class PullRequestProcessor(
         try {
             logger.info("Cloning repository from ${event.cloneUrl} to temporary path $localPath")
             git = Git.cloneRepository().setURI(event.cloneUrl).setDirectory(localPath).call()
-
+            logger.info("Checking out head commit: ${event.headSha}")
+            git.checkout().setName(event.headSha).call()
             val repository = git.repository
             val oldTreeId = repository.resolve("${event.baseSha}^{tree}")
             val newTreeId = repository.resolve("${event.headSha}^{tree}")
@@ -50,9 +51,11 @@ class PullRequestProcessor(
                             contentWithLineNumbers = processedFile.content,
                         )
 
+                    logger.info("File ${outgoingEvent.filename} content:\n ${outgoingEvent.contentWithLineNumbers}")
+
                     // Publish the event to the next topic in the chain
-                    kafkaTemplate.send(topic, outgoingEvent)
-                    logger.info("Published analysis request for file: ${processedFile.filename}")
+                 //   kafkaTemplate.send(topic, outgoingEvent)
+                //    logger.info("Published analysis request for file: ${processedFile.filename}")
                 }
             }
         } catch (e: Exception) {
