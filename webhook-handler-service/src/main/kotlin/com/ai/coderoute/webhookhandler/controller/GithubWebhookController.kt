@@ -29,7 +29,6 @@ class GithubWebhookController
             when (eventType) {
                 "ping" -> webhookService.handlePing(jsonNode)
                 "pull_request" -> webhookService.handlePullRequest(jsonNode)
-                "push"-> webhookService.handlePush(jsonNode)
                 else -> println("Unhandled event: $eventType")
             }
         }
