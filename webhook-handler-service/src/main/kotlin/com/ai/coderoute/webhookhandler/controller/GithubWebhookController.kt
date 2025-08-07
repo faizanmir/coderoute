@@ -1,8 +1,8 @@
 package com.ai.coderoute.webhookhandler.controller
 
+import com.ai.coderoute.logging.logger
 import com.ai.coderoute.webhookhandler.service.GitHubWebhookService
 import com.fasterxml.jackson.databind.JsonNode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 class GithubWebhookController
     @Autowired
     constructor(private val webhookService: GitHubWebhookService) {
-        private val logger = LoggerFactory.getLogger(GithubWebhookController::class.java)
+        private val logger = logger()
 
         @PostMapping("/webhook")
         @ResponseStatus(HttpStatus.OK)
@@ -29,7 +29,7 @@ class GithubWebhookController
             when (eventType) {
                 "ping" -> webhookService.handlePing(jsonNode)
                 "pull_request" -> webhookService.handlePullRequest(jsonNode)
-                else -> println("Unhandled event: $eventType")
+                else -> logger.error("Unhandled event: $eventType")
             }
         }
     }
