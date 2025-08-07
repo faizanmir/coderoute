@@ -25,6 +25,7 @@ class GithubWebhookController
             @RequestHeader("X-GitHub-Event") eventType: String,
             @RequestBody jsonNode: JsonNode,
         ) {
+            logger.info("Received event {}", jsonNode)
             when (eventType) {
                 "ping" -> webhookService.handlePing(jsonNode)
                 "pull_request" -> webhookService.handlePullRequest(jsonNode)
