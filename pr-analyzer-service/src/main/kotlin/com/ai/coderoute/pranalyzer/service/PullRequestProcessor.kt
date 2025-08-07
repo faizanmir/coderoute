@@ -52,10 +52,8 @@ class PullRequestProcessor(
                         )
 
                     logger.info("File ${outgoingEvent.filename} content:\n ${outgoingEvent.contentWithLineNumbers}")
-
-                    // Publish the event to the next topic in the chain
-                 //   kafkaTemplate.send(topic, outgoingEvent)
-                //    logger.info("Published analysis request for file: ${processedFile.filename}")
+                    kafkaTemplate.send(topic, outgoingEvent)
+                    logger.info("Published analysis request for file: ${processedFile.filename}")
                 }
             }
         } catch (e: Exception) {
