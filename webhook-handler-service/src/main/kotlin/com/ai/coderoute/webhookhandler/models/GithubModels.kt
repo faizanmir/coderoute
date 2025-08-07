@@ -14,16 +14,6 @@ data class GitHubPullRequestPayload(
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class GithubPushRequestPayload(
-    @JsonProperty("repository")
-    val repository: Repository,
-    @JsonProperty("before")
-    val before: String?,
-    @JsonProperty("after")
-    val after: String?
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class Repository(
     @JsonProperty("name")
     val name: String,
