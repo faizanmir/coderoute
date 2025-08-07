@@ -24,9 +24,14 @@ class AiReviewerListener
             groupId = "ai-review-service-group",
         )
         fun consumeFileReadyForAnalysisEvent(event: FileReadyForAnalysis) {
-            logger.info("Received event for {} analysis ", event.filename)
-            val res = llmReviewService.reviewCode(event.filename, event.contentWithLineNumbers)
-            val resultEvent = AnalysisCompleted(event.owner, event.repo, event.pullNumber, event.filename, res)
-            kafkaTemplate.send(resultsTopic, resultEvent)
+            logger.info("Received event for {} analysis", event.filename)
+            try {
+                val res = llmReviewService.reviewCode(event.filename, event.contentWithLineNumbers)
+                val resultEvent = AnalysisCompleted(event.owner, event.repo, event.pullNumber, event.filename, res)
+                kafkaTemplate.send(resultsTopic, resultEvent)
+                logger.info("Successfully processed and published results for {}", event.filename)
+            } catch (e: Exception) {
+                logger.error("FATAL: Failed to process file analysis for event: ${event.filename}", e)
+            }
         }
     }

@@ -47,4 +47,10 @@ class GitHubWebhookService
                 )
             eventPublisher.publish(event)
         }
+
+    fun handlePush(jsonNode: JsonNode) {
+        val before = jsonNode.get("before").asText()
+        val after = jsonNode.get("after").asText()
     }
+
+}
