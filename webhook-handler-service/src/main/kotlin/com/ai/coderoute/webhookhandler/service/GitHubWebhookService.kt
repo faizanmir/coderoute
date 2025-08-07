@@ -2,6 +2,7 @@ package com.ai.coderoute.webhookhandler.service
 
 import com.ai.coderoute.models.PullRequestReceivedEvent
 import com.ai.coderoute.webhookhandler.models.GitHubPullRequestPayload
+import com.ai.coderoute.webhookhandler.models.GithubPushRequestPayload
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
@@ -49,8 +50,7 @@ class GitHubWebhookService
         }
 
     fun handlePush(jsonNode: JsonNode) {
-        val before = jsonNode.get("before").asText()
-        val after = jsonNode.get("after").asText()
+        objectMapper.treeToValue(jsonNode, GithubPushRequestPayload::class.java)
     }
 
 }
