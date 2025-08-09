@@ -27,7 +27,12 @@ class ApplicationConfig {
     fun coroutineScope() =
         CoroutineScope(
             SupervisorJob() +
-                    CoroutineExceptionHandler { _, t -> println("Exception encountered in coroutine scope ${t.message}") } +
-                    Dispatchers.IO,
+                CoroutineExceptionHandler {
+                        _,
+                        t,
+                    ->
+                    println("Exception encountered in coroutine scope ${t.message}")
+                } +
+                Dispatchers.IO,
         )
 }

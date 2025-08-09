@@ -19,7 +19,7 @@ class WebhookEventPublisher
                 logger.info(
                     "Publishing event to topic '$topic' for PR #${event.pullNumber} in ${event.owner}/${event.repo}",
                 )
-                kafkaTemplate.send(topic, Events.PR.RECEIVED_KEY,event)
+                kafkaTemplate.send(topic, Events.PR.RECEIVED_KEY, event)
             } catch (e: Exception) {
                 logger.error("Failed to publish event for PR #${event.pullNumber}", e)
             }

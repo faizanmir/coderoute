@@ -1,7 +1,6 @@
 package com.ai.coderoute.constants
 
 object Events {
-
     object PR {
         const val RECEIVED = "pr.received"
         const val RECEIVED_KEY = "pr.received.key"

@@ -39,7 +39,7 @@ class PullRequestProcessor(
 
                             logger.info("Outgoing Event {}", outgoingEvent)
 
-                            kafkaTemplate.send(topic, Events.PR.Analysis.COMPLETE_KEY ,outgoingEvent)
+                            kafkaTemplate.send(topic, Events.PR.Analysis.COMPLETE_KEY, outgoingEvent)
                         }
                 }
             }

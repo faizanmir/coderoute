@@ -1,7 +1,7 @@
 package com.ai.coderoute.aireviewservice.component
 
-import com.ai.coderoute.constants.Events
 import com.ai.coderoute.aireviewservice.service.LlmReviewService
+import com.ai.coderoute.constants.Events
 import com.ai.coderoute.models.AnalysisCompleted
 import com.ai.coderoute.models.FileReadyForAnalysis
 import org.slf4j.LoggerFactory
@@ -29,7 +29,7 @@ class AiReviewerListener
             try {
                 val res = llmReviewService.reviewCode(event.filename, event.contentWithLineNumbers)
                 val resultEvent = AnalysisCompleted(event.owner, event.repo, event.pullNumber, event.filename, res)
-                kafkaTemplate.send(resultsTopic, Events.Review.REVIEW_COMPLETE_KEY,resultEvent)
+                kafkaTemplate.send(resultsTopic, Events.Review.REVIEW_COMPLETE_KEY, resultEvent)
                 logger.info("Successfully processed and published results for {}", event.filename)
             } catch (e: Exception) {
                 logger.error("FATAL: Failed to process file analysis for event: ${event.filename}", e)
