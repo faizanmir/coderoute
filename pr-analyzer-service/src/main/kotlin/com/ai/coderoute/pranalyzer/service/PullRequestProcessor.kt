@@ -1,94 +1,50 @@
 package com.ai.coderoute.pranalyzer.service
 
+import com.ai.coderoute.constants.Events
 import com.ai.coderoute.logging.logger
 import com.ai.coderoute.models.FileReadyForAnalysis
 import com.ai.coderoute.models.PullRequestReceivedEvent
-import com.ai.coderoute.pranalyzer.models.ProcessedFile
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.diff.DiffEntry
-import org.eclipse.jgit.treewalk.CanonicalTreeParser
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
-import java.io.File
-import java.nio.file.Files
+import java.util.Base64
 
 @Service
 class PullRequestProcessor(
     private val kafkaTemplate: KafkaTemplate<String, FileReadyForAnalysis>,
+    private val githubApi: GitHubApi,
 ) {
-    private val topic = "file-analysis-events"
+    private val topic = Events.PR.Analysis.COMPLETE
     private val logger = logger<PullRequestProcessor>()
 
     fun process(event: PullRequestReceivedEvent) {
-        val localPath = Files.createTempDirectory("pr-repo-${event.pullNumber}-").toFile()
-        var git: Git? = null
-
         try {
-            logger.info("Cloning repository from ${event.cloneUrl} to temporary path $localPath")
-            git = Git.cloneRepository().setURI(event.cloneUrl).setDirectory(localPath).call()
-            logger.info("Checking out head commit: ${event.headSha}")
-            git.checkout().setName(event.headSha).call()
-            val repository = git.repository
-            val oldTreeId = repository.resolve("${event.baseSha}^{tree}")
-            val newTreeId = repository.resolve("${event.headSha}^{tree}")
+            githubApi.compareCommits(event.owner, event.repo, event.baseSha, event.headSha).subscribe { diff ->
+                diff.files.filter { it.status != "removed" }.forEach { changedFile ->
+                    githubApi.getFileContent(event.owner, event.repo, changedFile.filename, event.headSha)
+                        .subscribe { fileContent ->
+                            val decodedContent =
+                                Base64.getDecoder().decode(fileContent.content).toString(Charsets.UTF_8)
+                            val numberedContent =
+                                decodedContent.lines().mapIndexed { index, line -> "${index + 1}: $line" }
+                                    .joinToString("\n")
 
-            repository.newObjectReader().use { reader ->
-                val oldTreeIter = CanonicalTreeParser(null, reader, oldTreeId)
-                val newTreeIter = CanonicalTreeParser(null, reader, newTreeId)
+                            val outgoingEvent =
+                                FileReadyForAnalysis(
+                                    filename = changedFile.filename,
+                                    contentWithLineNumbers = numberedContent,
+                                    repo = event.repo,
+                                    pullNumber = event.pullNumber,
+                                    owner = event.owner,
+                                )
 
-                logger.info("Performing local diff between base (${event.baseSha}) and head (${event.headSha})")
-                val diffs: List<DiffEntry> = git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()
+                            logger.info("Outgoing Event {}", outgoingEvent)
 
-                diffs.forEach { diffEntry ->
-                    val processedFile = processDiffEntry(diffEntry, localPath)
-
-                    val outgoingEvent =
-                        FileReadyForAnalysis(
-                            owner = event.owner,
-                            repo = event.repo,
-                            pullNumber = event.pullNumber,
-                            filename = processedFile.filename,
-                            contentWithLineNumbers = processedFile.content,
-                        )
-
-                    logger.info("File ${outgoingEvent.filename} content:\n ${outgoingEvent.contentWithLineNumbers}")
-                    kafkaTemplate.send(topic, outgoingEvent)
-                    logger.info("Published analysis request for file: ${processedFile.filename}")
+                            kafkaTemplate.send(topic, Events.PR.Analysis.COMPLETE_KEY ,outgoingEvent)
+                        }
                 }
             }
         } catch (e: Exception) {
-            logger.error("Failed to process PR #${event.pullNumber} by cloning.", e)
-        } finally {
-            logger.info("Cleaning up temporary directory: $localPath")
-            git?.close()
-            localPath.deleteRecursively()
-        }
-    }
-
-    private fun processDiffEntry(
-        diffEntry: DiffEntry,
-        localPath: File,
-    ): ProcessedFile {
-        val filename =
-            when (diffEntry.changeType) {
-                DiffEntry.ChangeType.DELETE -> diffEntry.oldPath
-                else -> diffEntry.newPath
-            }
-
-        return if (diffEntry.changeType == DiffEntry.ChangeType.DELETE) {
-            ProcessedFile(filename, "File was removed in this pull request.")
-        } else {
-            val localFile = File(localPath, filename)
-            if (!localFile.exists()) {
-                logger.warn("File listed in diff does not exist locally: $filename")
-                ProcessedFile(filename, "File does not exist at head commit.")
-            } else {
-                val numberedContent = localFile.readLines(Charsets.UTF_8)
-                    .mapIndexed { index, line -> "${index + 1}: $line" }
-                    .joinToString("\n")
-                logger.info("numberedContent {}", numberedContent)
-                ProcessedFile(filename, numberedContent)
-            }
+            logger.error("Failed to process PR #${event.pullNumber} using API.", e)
         }
     }
 }

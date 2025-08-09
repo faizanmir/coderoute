@@ -74,6 +74,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-stdlib</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-test-junit5</artifactId>
 			<version>2.2.0</version>
 			<scope>test</scope>
@@ -84,17 +88,6 @@
 			<version>5.10.0</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-stdlib</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
 
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
@@ -102,21 +95,18 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.eclipse.jgit</groupId>
-			<artifactId>org.eclipse.jgit</artifactId>
-			<version>6.8.0.202311291450-r</version> <!-- Or the latest version -->
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-kotlin</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>core-config</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
 	</dependencies>
 
 </project>

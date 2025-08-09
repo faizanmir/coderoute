@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class AppConfig {
     @Bean
-    fun chatClient(
-        builder: ChatClient.Builder,
-    ): ChatClient {
+    fun chatClient(builder: ChatClient.Builder): ChatClient {
         return builder.build()
     }
 

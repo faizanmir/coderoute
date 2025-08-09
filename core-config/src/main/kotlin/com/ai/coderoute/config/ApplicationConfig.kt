@@ -1,4 +1,4 @@
-package com.ai.coderoute.commentpublisher.config
+package com.ai.coderoute.config
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
-class GithubCodePublisherConfig {
+class ApplicationConfig {
     @Value("\${github.token}")
     private lateinit var githubToken: String
 
@@ -27,7 +27,7 @@ class GithubCodePublisherConfig {
     fun coroutineScope() =
         CoroutineScope(
             SupervisorJob() +
-                CoroutineExceptionHandler { _, t -> println("Exception encountered in coroutine scope ${t.message}") } +
-                Dispatchers.IO,
+                    CoroutineExceptionHandler { _, t -> println("Exception encountered in coroutine scope ${t.message}") } +
+                    Dispatchers.IO,
         )
 }

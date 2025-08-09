@@ -1,5 +1,6 @@
 package com.ai.coderoute.pranalyzer.component
 
+import com.ai.coderoute.constants.Events
 import com.ai.coderoute.models.PullRequestReceivedEvent
 import com.ai.coderoute.pranalyzer.service.PullRequestProcessor
 import org.slf4j.LoggerFactory
@@ -14,7 +15,7 @@ class PullRequestListener
         private val logger = LoggerFactory.getLogger(PullRequestListener::class.java)
 
         @KafkaListener(
-            topics = ["pr-events"],
+            topics = [Events.PR.RECEIVED],
             groupId = "pr-analyzer-group",
         )
         fun consumePullRequestEvent(event: PullRequestReceivedEvent) {
