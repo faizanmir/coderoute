@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>PR Threads</title>
+  <style>
+    .badge { background: #d33; color: #fff; padding: 2px 6px; border-radius: 12px; }
+    .thread { border: 1px solid #ccc; margin: 10px 0; }
+    .thread-header { padding: 5px; cursor: pointer; background: #f0f0f0; }
+    .comments { display: none; padding: 5px 10px; }
+  </style>
+</head>
+<body>
+  <h1>Pull Request Threads</h1>
+  <div>Unresolved Threads: <span id="unresolvedCount" class="badge">0</span></div>
+  <div id="threads"></div>
+  <script>
+    async function load() {
+      const params = new URLSearchParams(window.location.search);
+      const owner = params.get('owner');
+      const repo = params.get('repo');
+      const number = params.get('number');
+      if (!owner || !repo || !number) {
+        return;
+      }
+      const base = `/api/v1/pr/${owner}/${repo}/${number}`;
+      const countResp = await fetch(`${base}/unresolved-count`);
+      const countData = await countResp.json();
+      document.getElementById('unresolvedCount').textContent = countData.unresolvedCount;
+      const threadsResp = await fetch(`${base}/threads`);
+      const allThreads = await threadsResp.json();
+      const container = document.getElementById('threads');
+      allThreads.filter(t => !t.resolved).forEach(t => {
+        const tDiv = document.createElement('div');
+        tDiv.className = 'thread';
+        const header = document.createElement('div');
+        header.className = 'thread-header';
+        header.textContent = `Thread #${t.id}`;
+        const commentsDiv = document.createElement('div');
+        commentsDiv.className = 'comments';
+        t.comments.forEach(c => {
+          const p = document.createElement('p');
+          const a = document.createElement('a');
+          if (c.path && c.line) {
+            a.href = `${c.path}#L${c.line}`;
+          } else {
+            a.href = '#';
+          }
+          a.textContent = c.body;
+          p.appendChild(a);
+          commentsDiv.appendChild(p);
+        });
+        header.addEventListener('click', () => {
+          commentsDiv.style.display = commentsDiv.style.display === 'none' ? 'block' : 'none';
+        });
+        tDiv.appendChild(header);
+        tDiv.appendChild(commentsDiv);
+        container.appendChild(tDiv);
+      });
+    }
+    load();
+  </script>
+</body>
+</html>

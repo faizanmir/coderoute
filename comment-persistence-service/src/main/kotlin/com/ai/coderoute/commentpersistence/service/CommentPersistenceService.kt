@@ -25,6 +25,7 @@ class CommentPersistenceService(
                 entity.body = event.body ?: ""
                 entity.path = event.filePath
                 entity.line = event.line
+                entity.threadId = event.threadId
                 entity.inThread = event.inThread
                 entity.updatedAt = event.updatedAt
                 entity.pullRequest = pr
