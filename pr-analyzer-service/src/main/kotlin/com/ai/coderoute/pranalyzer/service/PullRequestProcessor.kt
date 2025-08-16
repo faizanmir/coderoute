@@ -23,7 +23,7 @@ class PullRequestProcessor(
                     githubApi.getFileContent(event.owner, event.repo, changedFile.filename, event.headSha)
                         .subscribe { fileContent ->
                             val decodedContent =
-                                Base64.getDecoder().decode(fileContent.content).toString(Charsets.UTF_8)
+                                Base64.getDecoder().decode(fileContent.content).decodeToString()
                             val numberedContent =
                                 decodedContent.lines().mapIndexed { index, line -> "${index + 1}: $line" }
                                     .joinToString("\n")
