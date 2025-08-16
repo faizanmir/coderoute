@@ -19,4 +19,5 @@ class PullRequestEntity(
     var owner: String = "",
     var repo: String = "",
     var number: Int = 0,
+    var unresolvedCount: Int = 0,
 )
