@@ -6,6 +6,7 @@ import com.ai.coderoute.models.FileReadyForAnalysis
 import com.ai.coderoute.models.PullRequestReceivedEvent
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import java.util.Base64
 
 @Service
@@ -17,34 +18,35 @@ class PullRequestProcessor(
     private val logger = logger<PullRequestProcessor>()
 
     fun process(event: PullRequestReceivedEvent) {
-        try {
-            githubApi.compareCommits(event.owner, event.repo, event.baseSha, event.headSha).subscribe { diff ->
-                diff.files.filter { it.status != "removed" }.forEach { changedFile ->
-                    githubApi.getFileContent(event.owner, event.repo, changedFile.filename, event.headSha)
-                        .subscribe { fileContent ->
-                            val decodedContent =
-                                Base64.getDecoder().decode(fileContent.content).decodeToString()
-                            val numberedContent =
-                                decodedContent.lines().mapIndexed { index, line -> "${index + 1}: $line" }
-                                    .joinToString("\n")
+        githubApi.compareCommits(event.owner, event.repo, event.baseSha, event.headSha)
+            .flatMapMany { diff -> Flux.fromIterable(diff.files) }
+            .filter { it.status != "removed" }
+            .flatMap { changedFile ->
+                githubApi.getFileContent(event.owner, event.repo, changedFile.filename, event.headSha)
+                    .map { fileContent ->
+                        val decodedContent =
+                            Base64.getDecoder().decode(fileContent.content).decodeToString()
+                        val numberedContent =
+                            decodedContent.lines()
+                                .mapIndexed { index, line -> "${index + 1}: $line" }
+                                .joinToString("\n")
 
-                            val outgoingEvent =
-                                FileReadyForAnalysis(
-                                    filename = changedFile.filename,
-                                    contentWithLineNumbers = numberedContent,
-                                    repo = event.repo,
-                                    pullNumber = event.pullNumber,
-                                    owner = event.owner,
-                                )
-
-                            logger.info("Outgoing Event {}", outgoingEvent)
-
-                            kafkaTemplate.send(topic, Events.PR.Analysis.COMPLETE_KEY, outgoingEvent)
-                        }
-                }
+                        FileReadyForAnalysis(
+                            filename = changedFile.filename,
+                            contentWithLineNumbers = numberedContent,
+                            repo = event.repo,
+                            pullNumber = event.pullNumber,
+                            owner = event.owner,
+                        )
+                    }
+                    .doOnNext { outgoingEvent ->
+                        logger.info("Outgoing Event {}", outgoingEvent)
+                        kafkaTemplate.send(topic, Events.PR.Analysis.COMPLETE_KEY, outgoingEvent)
+                    }
             }
-        } catch (e: Exception) {
-            logger.error("Failed to process PR #${event.pullNumber} using API.", e)
-        }
+            .doOnError { e ->
+                logger.error("Failed to process PR #${event.pullNumber} using API.", e)
+            }
+            .subscribe()
     }
 }
