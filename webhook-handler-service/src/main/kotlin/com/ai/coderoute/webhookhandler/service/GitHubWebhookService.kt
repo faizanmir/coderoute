@@ -39,6 +39,7 @@ class GitHubWebhookService
 
         fun handlePullRequestReviewComment(payload: JsonNode) {
             val event = objectMapper.treeToValue(payload, GitHubReviewCommentPayload::class.java)
+            val threadId = event.comment.inReplyToId ?: event.comment.id
             val commentEvent =
                 PullRequestCommentEvent(
                     action = event.action,
@@ -50,6 +51,7 @@ class GitHubWebhookService
                     body = event.comment.body,
                     filePath = event.comment.path,
                     line = event.comment.line,
+                    threadId = threadId,
                     inThread = event.comment.inReplyToId != null,
                     updatedAt = Instant.parse(event.comment.updatedAt),
                 )
@@ -90,6 +92,7 @@ class GitHubWebhookService
                     body = event.comment.body,
                     filePath = null,
                     line = null,
+                    threadId = null,
                     inThread = false,
                     updatedAt = Instant.parse(event.comment.updatedAt),
                 )

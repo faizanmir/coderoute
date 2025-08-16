@@ -29,6 +29,7 @@ class CommentPersistenceServiceTest @Autowired constructor(
                 body = "body",
                 filePath = "file",
                 line = 1,
+                threadId = 1,
                 inThread = false,
                 updatedAt = Instant.now(),
             )
@@ -36,5 +37,7 @@ class CommentPersistenceServiceTest @Autowired constructor(
         service.handle(event)
         assertEquals(1, commentRepository.count())
         assertEquals(1, pullRequestRepository.count())
+        val saved = commentRepository.findById(1).get()
+        assertEquals(1, saved.threadId)
     }
 }

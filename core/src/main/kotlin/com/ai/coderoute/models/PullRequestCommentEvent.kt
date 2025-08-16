@@ -12,6 +12,7 @@ data class PullRequestCommentEvent(
     val body: String?,
     val filePath: String?,
     val line: Int?,
+    val threadId: Long?,
     val inThread: Boolean,
     val updatedAt: Instant,
 )

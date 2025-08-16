@@ -20,6 +20,7 @@ class CommentEntity(
     var line: Int? = null,
     @Column(columnDefinition = "TEXT")
     var body: String = "",
+    var threadId: Long? = null,
     var inThread: Boolean = false,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pull_request_id")
