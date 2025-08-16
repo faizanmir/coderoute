@@ -56,10 +56,8 @@ services:
     container_name: comment-publisher-app
     depends_on:
       - kafka
-      - mongo
     environment:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/coderoute
 
   comment-persistence:
     build:
@@ -71,8 +69,12 @@ services:
     container_name: comment-persistence-app
     depends_on:
       - kafka
+      - postgres
     environment:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/commentdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
 
   # 2. Backing Infrastructure Services
   ollama:
@@ -116,14 +118,18 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  mongo:
-    image: mongo:latest
-    container_name: mongo-db
+  postgres:
+    image: postgres:16
+    container_name: postgres-db
     ports:
-      - "27017:27017"
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=commentdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     volumes:
-      - mongo_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   ollama_data:
-  mongo_data:
+  postgres_data:
