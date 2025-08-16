@@ -61,6 +61,19 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/coderoute
 
+  comment-persistence:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: comment-persistence-service
+        SERVICE_PORT: 8084
+    container_name: comment-persistence-app
+    depends_on:
+      - kafka
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+
   # 2. Backing Infrastructure Services
   ollama:
     image: ollama/ollama

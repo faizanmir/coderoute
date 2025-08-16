@@ -25,8 +25,9 @@
 		<module>webhook-handler-service</module>
 		<module>pr-analyzer-service</module>
 		<module>ai-reviewer-service</module>
-		<module>comment-publisher-service</module>
-		<module>core</module>
+                <module>comment-publisher-service</module>
+                <module>comment-persistence-service</module>
+                <module>core</module>
 		<module>core-config</module>
 	</modules>
 	<scm>

@@ -1,12 +1,16 @@
 package com.ai.coderoute.webhookhandler.service
 
 import com.ai.coderoute.models.PullRequestReceivedEvent
+import com.ai.coderoute.models.PullRequestCommentEvent
+import com.ai.coderoute.webhookhandler.models.GitHubIssueCommentPayload
 import com.ai.coderoute.webhookhandler.models.GitHubPullRequestPayload
+import com.ai.coderoute.webhookhandler.models.GitHubReviewCommentPayload
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
 class GitHubWebhookService
@@ -14,6 +18,7 @@ class GitHubWebhookService
     constructor(
         private val objectMapper: ObjectMapper,
         val eventPublisher: WebhookEventPublisher,
+        private val commentEventPublisher: CommentEventPublisher,
     ) {
         private val logger = LoggerFactory.getLogger(GitHubWebhookService::class.java)
 
@@ -27,6 +32,47 @@ class GitHubWebhookService
 
         fun handlePullRequest(payload: JsonNode) {
             handlePullRequestInternal(jsonNode = payload)
+        }
+
+        fun handlePullRequestReviewComment(payload: JsonNode) {
+            val event = objectMapper.treeToValue(payload, GitHubReviewCommentPayload::class.java)
+            val commentEvent =
+                PullRequestCommentEvent(
+                    action = event.action,
+                    commentId = event.comment.id,
+                    owner = event.repository.owner.login,
+                    repo = event.repository.name,
+                    pullNumber = event.pullRequest.number,
+                    author = event.comment.user.login,
+                    body = event.comment.body,
+                    filePath = event.comment.path,
+                    line = event.comment.line,
+                    inThread = event.comment.inReplyToId != null,
+                    updatedAt = Instant.parse(event.comment.updatedAt),
+                )
+            commentEventPublisher.publish(commentEvent)
+        }
+
+        fun handleIssueComment(payload: JsonNode) {
+            val event = objectMapper.treeToValue(payload, GitHubIssueCommentPayload::class.java)
+            if (event.issue.pullRequest == null) {
+                return
+            }
+            val commentEvent =
+                PullRequestCommentEvent(
+                    action = event.action,
+                    commentId = event.comment.id,
+                    owner = event.repository.owner.login,
+                    repo = event.repository.name,
+                    pullNumber = event.issue.number,
+                    author = event.comment.user.login,
+                    body = event.comment.body,
+                    filePath = null,
+                    line = null,
+                    inThread = false,
+                    updatedAt = Instant.parse(event.comment.updatedAt),
+                )
+            commentEventPublisher.publish(commentEvent)
         }
 
         private fun handlePullRequestInternal(jsonNode: JsonNode) {
@@ -47,4 +93,5 @@ class GitHubWebhookService
                 )
             eventPublisher.publish(event)
         }
+
     }
