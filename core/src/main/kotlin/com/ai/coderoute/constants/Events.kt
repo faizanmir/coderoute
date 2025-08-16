@@ -15,4 +15,9 @@ object Events {
         const val REVIEW_COMPLETE = "ai.review.complete"
         const val REVIEW_COMPLETE_KEY = "ai.review.complete.key"
     }
+
+    object Comment {
+        const val RECEIVED = "pr.comment.received"
+        const val RECEIVED_KEY = "pr.comment.received.key"
+    }
 }

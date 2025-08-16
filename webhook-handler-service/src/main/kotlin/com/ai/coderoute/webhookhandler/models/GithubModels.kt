@@ -50,3 +50,51 @@ data class Head(
     @JsonProperty("sha")
     val sha: String,
 )
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class GitHubReviewCommentPayload(
+    @JsonProperty("action") val action: String,
+    @JsonProperty("repository") val repository: Repository,
+    @JsonProperty("pull_request") val pullRequest: PullRequest,
+    @JsonProperty("comment") val comment: ReviewComment,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ReviewComment(
+    @JsonProperty("id") val id: Long,
+    @JsonProperty("user") val user: User,
+    @JsonProperty("body") val body: String,
+    @JsonProperty("path") val path: String? = null,
+    @JsonProperty("line") val line: Int? = null,
+    @JsonProperty("in_reply_to_id") val inReplyToId: Long? = null,
+    @JsonProperty("created_at") val createdAt: String,
+    @JsonProperty("updated_at") val updatedAt: String,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class GitHubIssueCommentPayload(
+    @JsonProperty("action") val action: String,
+    @JsonProperty("repository") val repository: Repository,
+    @JsonProperty("issue") val issue: Issue,
+    @JsonProperty("comment") val comment: IssueComment,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class IssueComment(
+    @JsonProperty("id") val id: Long,
+    @JsonProperty("user") val user: User,
+    @JsonProperty("body") val body: String,
+    @JsonProperty("created_at") val createdAt: String,
+    @JsonProperty("updated_at") val updatedAt: String,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class User(
+    @JsonProperty("login") val login: String,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Issue(
+    @JsonProperty("number") val number: Int,
+    @JsonProperty("pull_request") val pullRequest: Any? = null,
+)
