@@ -29,6 +29,7 @@
                 <module>comment-persistence-service</module>
                 <module>core</module>
 		<module>core-config</module>
+		<module>persistence-service</module>
 	</modules>
 	<scm>
 		<connection/>
