@@ -30,6 +30,7 @@ class GithubWebhookController
                 "ping" -> webhookService.handlePing(jsonNode)
                 "pull_request" -> webhookService.handlePullRequest(jsonNode)
                 "pull_request_review_comment" -> webhookService.handlePullRequestReviewComment(jsonNode)
+                "pull_request_review_thread" -> webhookService.handlePullRequestReviewThread(jsonNode)
                 "issue_comment" -> webhookService.handleIssueComment(jsonNode)
                 else -> logger.error("Unhandled event: $eventType")
             }

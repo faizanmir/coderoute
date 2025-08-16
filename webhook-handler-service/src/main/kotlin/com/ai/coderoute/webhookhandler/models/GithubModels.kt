@@ -98,3 +98,19 @@ data class Issue(
     @JsonProperty("number") val number: Int,
     @JsonProperty("pull_request") val pullRequest: Any? = null,
 )
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class GitHubReviewThreadPayload(
+    @JsonProperty("action") val action: String,
+    @JsonProperty("repository") val repository: Repository,
+    @JsonProperty("pull_request") val pullRequest: PullRequest,
+    @JsonProperty("thread") val thread: ReviewThread,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ReviewThread(
+    @JsonProperty("id") val id: Long,
+    @JsonProperty("resolved") val resolved: Boolean? = null,
+    @JsonProperty("resolved_by") val resolvedBy: User? = null,
+    @JsonProperty("resolved_at") val resolvedAt: String? = null,
+)

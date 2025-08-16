@@ -20,4 +20,9 @@ object Events {
         const val RECEIVED = "pr.comment.received"
         const val RECEIVED_KEY = "pr.comment.received.key"
     }
+
+    object ReviewThread {
+        const val RECEIVED = "pr.review_thread.received"
+        const val RECEIVED_KEY = "pr.review_thread.received.key"
+    }
 }
