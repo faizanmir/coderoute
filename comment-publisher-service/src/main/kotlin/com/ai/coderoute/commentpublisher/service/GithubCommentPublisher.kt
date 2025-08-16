@@ -18,7 +18,7 @@ class GithubCommentPublisher
             owner: String,
             repo: String,
             pullNumber: Int,
-            comments: List<ReviewComment?>,
+            comments: List<ReviewComment>,
         ) {
             if (comments.isEmpty()) {
                 println("No comments to post for PR #$pullNumber.")

@@ -18,7 +18,7 @@ class LlmReviewService
         fun reviewCode(
             filename: String,
             fileContent: String,
-        ): List<ReviewFinding?> {
+        ): List<ReviewFinding> {
             val codeBlock =
                 """
                 FILE_PATH: $filename
@@ -33,7 +33,7 @@ class LlmReviewService
                     .messages(listOf(systemMessage, userMessage))
                     .call()
             val data = response.content()
-            logger.info("Sending prompt to AI for file: $data")
+            logger.info("Received AI response for {}", filename)
             return jsonParser.parseFindingList(data)?.reviews ?: emptyList()
         }
     }
